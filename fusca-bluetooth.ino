@@ -1,46 +1,90 @@
 #include <SoftwareSerial.h>
+#include <Ultrasonic.h>
 
+// Constantes
 const int BUZINA = A0;
 const int FAROLD = 13;
 const int FAROLE = 12;
 const int FAROLT = 11;
 
+// Objetos
 SoftwareSerial bluetoothSerial(3, 2); // RX, TX
-String comando = "";
 
+Ultrasonic ultrassonicoFrente(A2, A3);
+Ultrasonic ultrassonicoAtras(A4, A5);
+
+// Controlador do motor
 class DCMotor {
-    int spd = 255, pin1, pin2;
+    // Declara variaveis
+    int vel = 150, pin1, pin2;
+
+    void positivo() {
+      analogWrite(pin1, vel);
+      digitalWrite(pin2, LOW);
+    }
+
+    void negativo() {
+      digitalWrite(pin1, LOW);
+      analogWrite(pin2, vel);
+    }
 
   public:
-
-    void Pinout(int in1, int in2) { // Pinout é o método para a declaração dos pinos que vão controlar o objeto motor
+    // Declara os pinos que irao controlar o objeto motor
+    void pinos(int in1, int in2) {
       pin1 = in1;
       pin2 = in2;
       pinMode(pin1, OUTPUT);
       pinMode(pin2, OUTPUT);
     }
-    void Speed(int in1) { // Speed é o método que irá ser responsável por salvar a velocidade de atuação do motor
-      spd = in1;
+
+    // Salva a velocidade de atuacao do motor. Velocidade de 0 a 255
+    void velocidade(int i) {
+      if (i > 255) {
+        vel = 255;
+        return;
+      }
+
+      if (i < 0) {
+        vel = 0;
+        return;
+      }
+
+      vel = i;
     }
-    void Forward() { // Forward é o método para fazer o motor girar para frente
-      analogWrite(pin1, spd);
-      digitalWrite(pin2, LOW);
+
+    // Faz motor girar no sentido horario
+    void frente() {
+      positivo();
     }
-    void Backward() { // Backward é o método para fazer o motor girar para trás
-      digitalWrite(pin1, LOW);
-      analogWrite(pin2, spd);
+
+    void direita() {
+      positivo();
     }
-    void Stop() { // Stop é o metodo para fazer o motor ficar parado.
+
+    // Faz motor girar no sentido anti-horario
+    void atras() {
+      negativo();
+    }
+
+    void esquerda() {
+      negativo();
+    }
+
+    // Desliga motor
+    void parar() {
       digitalWrite(pin1, LOW);
       digitalWrite(pin2, LOW);
     }
 };
 
-DCMotor Motor1, Motor2; // Criação de dois objetos motores, já que usaremos dois motores, e eles já estão prontos para receber os comandos já configurados acima.
+DCMotor MotorDianteiro, MotorTraseiro;
 
+// Variaveis
+char comando = "";
+
+// Liga fusca
 void setup() {
   Serial.begin(9600);
-  Serial.println("Digite os comandos AT: ");
 
   pinMode(BUZINA, OUTPUT);
 
@@ -48,41 +92,28 @@ void setup() {
   pinMode(FAROLE, OUTPUT);
   pinMode(FAROLT, OUTPUT);
 
-  bluetoothSerial.begin(9600);
+  MotorDianteiro.pinos(5, 6);
+  MotorTraseiro.pinos(9, 10);
 
-  Motor1.Pinout(5, 6); // Seleção dos pinos que cada motor usará, como descrito na classe.
-  Motor2.Pinout(9, 10);
+  MotorDianteiro.velocidade(200); // 80% da forca maxima
+  MotorTraseiro.velocidade(255 / 2); // 50% da forca maxima
+
+  bluetoothSerial.begin(9600);
 }
 
 void loop() {
+  // Le dados dos sensores ultrassonicos
+  int sensorAtivo = leUltrassonico(ultrassonicoFrente, ultrassonicoAtras); 
+
+  // Recebe dados do bluetooth
   if (bluetoothSerial.available()) {
-    char r = bluetoothSerial.read();
-    Serial.println(r);
+    comando = bluetoothSerial.read();
+  } else {
+    comando = "";
   }
 
-  
-
-  Motor1.Speed(255); // A velocidade do motor pode variar de 0 a 255, onde 255 é a velocidade máxima.
-  Motor2.Speed(255);
-
-  Motor1.Forward(); // Comando para o motor ir para frente
-  Motor2.Forward();
-  delay(1000);
-  Motor1.Backward(); // Comando para o motor ir para trás
-  Motor2.Backward();
-  delay(1000);
-
-  digitalWrite(FAROLD, HIGH);
-  digitalWrite(FAROLE, HIGH);
-  digitalWrite(FAROLT, HIGH);
-  
-  Motor1.Stop(); // Comando para o motor parar
-  Motor2.Stop();
-  delay(500);
-
-  tone(BUZINA, 1000, 500);
-
-  digitalWrite(FAROLD, LOW);
-  digitalWrite(FAROLE, LOW);
-  digitalWrite(FAROLT, LOW);
+  // Controla motores
+  controlaMotores(MotorDianteiro, MotorTraseiro, comando);
 }
+
+
