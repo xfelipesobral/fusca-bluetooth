@@ -115,5 +115,3 @@ void loop() {
   // Controla motores
   controlaMotores(MotorDianteiro, MotorTraseiro, comando);
 }
-
-
