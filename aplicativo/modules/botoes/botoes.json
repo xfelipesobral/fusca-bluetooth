@@ -1,0 +1,20 @@
+[
+    {
+        "icone": "car-light-high",
+        "descricao": "Farol",
+        "ativo": false,
+        "pressionado": true
+    },
+    {
+        "icone": "car-parking-lights",
+        "descricao": "Luzes Internas",
+        "ativo": false,
+        "pressionado": true
+    },
+    {
+        "icone": "air-horn",
+        "descricao": "Buzina",
+        "ativo": false,
+        "pressionado": false
+    }
+]

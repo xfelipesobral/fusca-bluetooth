@@ -11,6 +11,8 @@ npm-debug.*
 web-build
 .expo-shared
 
+.vscode
+
 yarn.lock
 
 # macOS

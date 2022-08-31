@@ -11,6 +11,8 @@
   "dependencies": {
     "expo": "~46.0.9",
     "expo-status-bar": "~1.4.0",
+    "korol-joystick": "^1.5.0",
+    "lottie-react-native": "5.1.3",
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-native": "0.69.5",
@@ -18,9 +20,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
-    "@types/react": "~18.0.14",
-    "@types/react-native": "~0.69.1",
-    "typescript": "~4.3.5"
+    "babel-preset-expo": "^9.2.0"
   },
   "private": true
 }
