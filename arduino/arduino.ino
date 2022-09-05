@@ -79,12 +79,12 @@ class DCMotor {
 
 DCMotor MotorDianteiro, MotorTraseiro;
 
-// Variaveis
-char comando = "";
-
 // Liga fusca
 void setup() {
   Serial.begin(9600);
+  bluetoothSerial.begin(9600);
+
+  delay(100);
 
   pinMode(BUZINA, OUTPUT);
 
@@ -96,22 +96,23 @@ void setup() {
   MotorTraseiro.pinos(9, 10);
 
   MotorDianteiro.velocidade(200); // 80% da forca maxima
-  MotorTraseiro.velocidade(255 / 2); // 50% da forca maxima
-
-  bluetoothSerial.begin(9600);
+  MotorTraseiro.velocidade(200); // 80% da forca maxima
 }
 
-void loop() {
-  // Le dados dos sensores ultrassonicos
-  int sensorAtivo = leUltrassonico(ultrassonicoFrente, ultrassonicoAtras); 
-
+void loop() {  
   // Recebe dados do bluetooth
   if (bluetoothSerial.available()) {
-    comando = bluetoothSerial.read();
-  } else {
-    comando = "";
-  }
+    char comando = bluetoothSerial.read();
 
-  // Controla motores
-  controlaMotores(MotorDianteiro, MotorTraseiro, comando);
+    Serial.println(comando);
+    
+    // Le dados dos sensores ultrassonicos
+    int sensorAtivo = leUltrassonico(ultrassonicoFrente, ultrassonicoAtras); 
+
+    // Liga farois
+    controlaLuzes(FAROLD, FAROLE, FAROLT, comando);
+  
+    // Controla motores
+    controlaMotores(MotorDianteiro, MotorTraseiro, comando);
+  }
 }
